@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OnlyHate - Red Social</title>
+  <!-- Font Awesome para íconos -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* RESET Y ESTILOS GLOBALES */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; color: #1c1e21; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* HEADER Y NAVEGACIÓN */
+    header {
+      background: #fff;
+      padding: 10px 20px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .logo { font-size: 1.5rem; font-weight: bold; color: #4267B2; }
+    .search { flex: 1; margin: 0 20px; }
+    .search input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+    nav { display: flex; gap: 10px; flex-wrap: wrap; }
+    nav button {
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.3s;
+      font-size: 0.9rem;
+    }
+    nav button:hover { background: #eee; }
+    
+    /* LAYOUT PRINCIPAL */
+    .container { 
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    @media (min-width: 768px) {
+      .container { grid-template-columns: 250px 1fr 300px; }
+    }
+    
+    /* SIDEBAR */
+    .sidebar {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .sidebar h3 { margin-bottom: 10px; color: #4267B2; }
+    .sidebar ul { list-style: none; }
+    .sidebar li { margin-bottom: 8px; }
+    
+    /* FEED DE PUBLICACIONES GLOBALES */
+    .feed {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .create-post { margin-bottom: 20px; }
+    .create-post textarea,
+    .create-post input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .create-post button {
+      background: #4267B2;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .post {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .post-header img { width: 40px; height: 40px; border-radius: 50%; }
+    .post .meta { font-size: 0.8rem; color: #555; }
+    .post .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    .post .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4267B2;
+      font-size: 0.9rem;
+    }
+    .comments {
+      margin-top: 10px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+    .comments .comment { 
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .comments .comment img { width: 30px; height: 30px; border-radius: 50%; }
+    .comments form { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 5px; 
+      margin-top: 10px; 
+    }
+    .comments form > div { display: flex; gap: 5px; align-items: center; }
+    .comments form input {
+      flex: 1;
+      padding: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .comments form button {
+      background: #4267B2;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .emoji-picker { font-size: 1.2rem; }
+    .emoji-picker span { cursor: pointer; margin-right: 5px; }
+    
+    /* CHAT GLOBAL */
+    .chat-container {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      height: 400px;
+    }
+    .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 10px; }
+    .chat-message { margin-bottom: 5px; }
+    .chat-input { display: flex; gap: 10px; }
+    .chat-input input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .chat-input button {
+      background: #4267B2;
+      color: #fff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    
+    /* MODAL DE AUTENTICACIÓN */
+    .auth-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .auth-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+    }
+    .auth-box h2 { margin-bottom: 10px; color: #4267B2; }
+    .auth-box input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .auth-box button {
+      width: 100%;
+      background: #4267B2;
+      color: #fff;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    
+    /* PERFIL DE USUARIO */
+    .profile-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .profile-box h2 { color: #4267B2; margin-bottom: 10px; text-align: center; }
+    .profile-box img { width: 100px; height: 100px; border-radius: 50%; display: block; margin: 10px auto; }
+    .profile-box input, .profile-box textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .profile-box button {
+      width: 100%;
+      background: #4267B2;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    
+    /* VISTA DE GRUPO INDIVIDUAL (ESTILO FACEBOOK GROUPS) */
+    .group-view { padding: 20px; }
+    .group-back { margin-bottom: 10px; cursor: pointer; color: #4267B2; font-size: 1rem; }
+    .group-header { text-align: center; margin-bottom: 20px; }
+    .group-header .cover {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .group-header h2 { color: #4267B2; margin-bottom: 5px; }
+    .group-header p { font-size: 1rem; color: #555; }
+    .group-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    @media (min-width: 768px) {
+      .group-content { grid-template-columns: 2fr 1fr; }
+    }
+    .group-feed, .group-chat {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      height: 400px;
+      overflow-y: auto;
+    }
+    .group-chat { height: 350px; }
+  </style>
+</head>
+<body>
+  <!-- MODAL DE AUTENTICACIÓN -->
+  <div id="authModal" class="auth-modal">
+    <div class="auth-box">
+      <h2>Iniciar Sesión / Registro</h2>
+      <input type="text" id="authUsername" placeholder="Usuario" required>
+      <input type="password" id="authPassword" placeholder="Contraseña" required>
+      <button onclick="login()">Entrar</button>
+    </div>
+  </div>
+  
+  <!-- HEADER Y NAVEGACIÓN -->
+  <header>
+    <div class="logo">OnlyHate</div>
+    <div class="search">
+      <input type="text" placeholder="Buscar...">
+    </div>
+    <nav>
+      <button onclick="navigate('home')"><i class="fas fa-home"></i> Inicio</button>
+      <button onclick="navigate('chat')"><i class="fas fa-comments"></i> Chat</button>
+      <button onclick="navigate('groupsMain')"><i class="fas fa-users"></i> Grupos</button>
+      <button onclick="navigate('trends')"><i class="fas fa-fire"></i> Tendencias</button>
+      <button onclick="navigate('profile')"><i class="fas fa-user"></i> Perfil</button>
+      <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+    </nav>
+  </header>
+  
+  <!-- SECCIÓN INICIO / FEED GLOBAL -->
+  <div id="home" class="container section active">
+    <!-- SIDEBAR IZQUIERDA -->
+    <aside class="sidebar">
+      <h3>Perfil</h3>
+      <div id="profileInfo">
+        <img id="sidebarAvatar" src="https://via.placeholder.com/80" alt="Avatar" style="border-radius:50%; margin-bottom:10px;">
+        <p id="profileUsername"></p>
+        <p>Karma: <span id="profileKarma">0</span></p>
+      </div>
+      <h3>Comunidades</h3>
+      <ul>
+        <li>#OdioGeneral</li>
+        <li>#RageAgainst</li>
+        <li>#HatersUnidos</li>
+      </ul>
+    </aside>
+    
+    <!-- FEED CENTRAL GLOBAL -->
+    <main class="feed">
+      <div class="create-post">
+        <textarea id="postText" placeholder="¿Qué estás pensando?" rows="3"></textarea>
+        <input type="file" id="postImage" accept="image/*">
+        <input type="file" id="postVideo" accept="video/*">
+        <button onclick="createPost()">Publicar</button>
+      </div>
+      <div id="postsFeed"></div>
+    </main>
+    
+    <!-- SIDEBAR DERECHA GLOBAL -->
+    <aside class="sidebar">
+      <h3>Tendencias</h3>
+      <div id="trendsFeed"></div>
+      <h3>Grupos</h3>
+      <div style="margin-bottom:10px;">
+        <input type="text" id="groupName" placeholder="Nombre del grupo">
+        <textarea id="groupDesc" placeholder="Descripción del grupo"></textarea>
+        <button onclick="createGroup()">Crear Grupo</button>
+      </div>
+      <ul id="groupsList"></ul>
+    </aside>
+  </div>
+  
+  <!-- SECCIÓN CHAT GLOBAL -->
+  <div id="chat" class="container section">
+    <main class="feed" style="width:100%;">
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Escribe tu mensaje...">
+          <button onclick="sendChat()">Enviar</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- SECCIÓN TENDENCIAS GLOBAL -->
+  <div id="trends" class="container section">
+    <main class="feed" style="width:100%;">
+      <h2>Tendencias</h2>
+      <div id="trendsFeedFull"></div>
+    </main>
+  </div>
+  
+  <!-- SECCIÓN PERFIL DE USUARIO -->
+  <div id="profile" class="section" style="padding:20px;">
+    <div class="profile-box">
+      <h2>Mi Perfil</h2>
+      <img id="profilePic" src="https://via.placeholder.com/100" alt="Avatar">
+      <input type="file" id="profilePicInput" accept="image/*">
+      <input type="text" id="profileDescription" placeholder="Descripción o frase">
+      <input type="text" id="profileInterests" placeholder="Gustos / Intereses">
+      <button onclick="updateProfile()">Actualizar Perfil</button>
+    </div>
+  </div>
+  
+  <!-- SECCIÓN VISTA DE GRUPO INDIVIDUAL (ESTILO FACEBOOK GROUPS) -->
+  <div id="groupView" class="section group-view">
+    <div class="group-back" onclick="closeGroupView()"><i class="fas fa-arrow-left"></i> Volver a Grupos</div>
+    <div class="group-header">
+      <img class="cover" src="https://via.placeholder.com/600x200" alt="Cover del Grupo">
+      <h2 id="groupTitle">Título del Grupo</h2>
+      <p id="groupDescription">Descripción del grupo</p>
+    </div>
+    <div class="group-content">
+      <!-- COL. PUBLICACIONES DEL GRUPO -->
+      <div class="group-feed" id="groupPostsFeed">
+        <div class="create-post">
+          <textarea id="groupPostText" placeholder="Publica en el grupo..." rows="3"></textarea>
+          <input type="file" id="groupPostImage" accept="image/*">
+          <input type="file" id="groupPostVideo" accept="video/*">
+          <button onclick="createGroupPost()">Publicar en Grupo</button>
+        </div>
+        <!-- Aquí se mostrarán las publicaciones del grupo -->
+      </div>
+      <!-- COL. CHAT DEL GRUPO -->
+      <div class="group-chat">
+        <h3>Chat del Grupo</h3>
+        <div class="chat-messages" id="groupChatMessages"></div>
+        <div class="chat-input">
+          <input type="text" id="groupChatInput" placeholder="Mensaje en grupo...">
+          <button onclick="sendGroupChat()">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    /* VARIABLES GLOBALES */
+    let currentUser = null;
+    let posts = JSON.parse(localStorage.getItem('posts')) || [];
+    let chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    let groups = JSON.parse(localStorage.getItem('groups')) || [];
+    // Cada grupo: id, name, description, members, posts (array), chatMessages (array)
+    
+    /* AUTENTICACIÓN */
+    function login() {
+      const username = document.getElementById('authUsername').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      if(username && password) {
+        currentUser = { 
+          username, 
+          password, 
+          karma: 0, 
+          description: 'Sin descripción', 
+          interests: 'No especificados', 
+          profilePic: '' 
+        };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        document.getElementById('profileUsername').innerText = username;
+        document.getElementById('authModal').style.display = 'none';
+        navigate('home');
+        renderPosts();
+        renderTrends();
+        renderGroups();
+      }
+    }
+    
+    function logout() {
+      localStorage.removeItem('currentUser');
+      currentUser = null;
+      location.reload();
+    }
+    
+    /* NAVEGACIÓN */
+    function navigate(section) {
+      document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+      if(section === 'home') { document.getElementById('home').style.display = 'grid'; }
+      else if(section === 'chat') { document.getElementById('chat').style.display = 'grid'; renderChat(); }
+      else if(section === 'trends') { document.getElementById('trends').style.display = 'block'; renderTrendsFull(); }
+      else if(section === 'profile') { document.getElementById('profile').style.display = 'block'; renderProfile(); }
+      else if(section === 'groupsMain') { document.getElementById('home').style.display = 'grid'; renderGroups(); }
+    }
+    
+    /* PUBLICACIONES GLOBALES */
+    function createPost() {
+      if(!currentUser) { alert('Debes iniciar sesión para publicar.'); return; }
+      const text = document.getElementById('postText').value.trim();
+      const imageFile = document.getElementById('postImage').files[0];
+      const videoFile = document.getElementById('postVideo').files[0];
+      if(!text && !imageFile && !videoFile) { alert('Escribe algo o adjunta un archivo.'); return; }
+      
+      const newPost = {
+        id: Date.now(),
+        username: currentUser.username,
+        profilePic: currentUser.profilePic || 'https://via.placeholder.com/40',
+        text,
+        image: '',
+        video: '',
+        likes: 0,
+        comments: [],
+        date: new Date().toLocaleString()
+      };
+      
+      const addPost = () => {
+        posts.unshift(newPost);
+        localStorage.setItem('posts', JSON.stringify(posts));
+        document.getElementById('postText').value = '';
+        document.getElementById('postImage').value = '';
+        document.getElementById('postVideo').value = '';
+        renderPosts();
+        renderTrends();
+      };
+      
+      if(imageFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          newPost.image = e.target.result;
+          if(videoFile) {
+            const vReader = new FileReader();
+            vReader.onload = function(e) { newPost.video = e.target.result; addPost(); };
+            vReader.readAsDataURL(videoFile);
+          } else { addPost(); }
+        };
+        reader.readAsDataURL(imageFile);
+      } else if(videoFile) {
+        const vReader = new FileReader();
+        vReader.onload = function(e) { newPost.video = e.target.result; addPost(); };
+        vReader.readAsDataURL(videoFile);
+      } else { addPost(); }
+    }
+    
+    function renderPosts() {
+      const postsFeed = document.getElementById('postsFeed');
+      postsFeed.innerHTML = '';
+      posts.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post';
+        postDiv.innerHTML = `
+          <div class="post-header">
+            <img src="${post.profilePic}" alt="Avatar">
+            <div>
+              <strong>${post.username}</strong>
+              <div class="meta">${post.date}</div>
+            </div>
+          </div>
+          <p>${post.text}</p>
+          ${post.image ? `<img src="${post.image}" alt="Imagen del post">` : ''}
+          ${post.video ? `<video controls src="${post.video}"></video>` : ''}
+          <div class="actions">
+            <button onclick="likePost(${post.id})"><i class="fas fa-thumbs-up"></i> ${post.likes}</button>
+            <button onclick="toggleComments(${post.id})"><i class="fas fa-comments"></i> Comentar</button>
+          </div>
+          <div class="comments" id="comments-${post.id}" style="display:none;">
+            <form onsubmit="addComment(event, ${post.id})">
+              <div style="display:flex; gap:5px; align-items:center;">
+                <input type="text" placeholder="Escribe un comentario..." required style="flex:1;">
+                <button type="button" onclick="toggleEmojiPicker(${post.id})">😀</button>
+              </div>
+              <div class="emoji-picker" id="emoji-picker-${post.id}" style="display:none; margin:5px 0;">
+                <span onclick="insertEmoji(${post.id}, '😀')">😀</span>
+                <span onclick="insertEmoji(${post.id}, '😂')">😂</span>
+                <span onclick="insertEmoji(${post.id}, '😍')">😍</span>
+                <span onclick="insertEmoji(${post.id}, '😢')">😢</span>
+                <span onclick="insertEmoji(${post.id}, '👍')">👍</span>
+                <span onclick="insertEmoji(${post.id}, '👎')">👎</span>
+              </div>
+              <button type="submit">Enviar</button>
+            </form>
+            ${post.comments.map(comment => `
+              <div class="comment">
+                <img src="${comment.profilePic}" alt="Avatar">
+                <span><strong>${comment.username}:</strong> ${comment.text}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        postsFeed.appendChild(postDiv);
+      });
+    }
+    
+    function likePost(postId) {
+      posts = posts.map(post => { if(post.id === postId) post.likes++; return post; });
+      localStorage.setItem('posts', JSON.stringify(posts));
+      renderPosts(); renderTrends();
+    }
+    
+    function toggleComments(postId) {
+      const commentDiv = document.getElementById('comments-' + postId);
+      commentDiv.style.display = commentDiv.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function addComment(event, postId) {
+      event.preventDefault();
+      const commentInput = event.target.querySelector('input');
+      const text = commentInput.value.trim();
+      if(text) {
+        posts = posts.map(post => {
+          if(post.id === postId) {
+            post.comments.push({ 
+              username: currentUser.username, 
+              text, 
+              profilePic: currentUser.profilePic || 'https://via.placeholder.com/40'
+            });
+          }
+          return post;
+        });
+        localStorage.setItem('posts', JSON.stringify(posts));
+        renderPosts();
+      }
+    }
+    
+    function toggleEmojiPicker(postId) {
+      const picker = document.getElementById('emoji-picker-' + postId);
+      picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function insertEmoji(postId, emoji) {
+      const form = document.querySelector(`#comments-${postId} form`);
+      if(form) { const input = form.querySelector('input'); input.value += emoji; }
+    }
+    
+    function renderTrends() {
+      const trendsFeed = document.getElementById('trendsFeed');
+      trendsFeed.innerHTML = '';
+      const sorted = [...posts].sort((a, b) => b.likes - a.likes);
+      sorted.forEach(post => {
+        const trendDiv = document.createElement('div');
+        trendDiv.className = 'post';
+        trendDiv.style.padding = '5px';
+        trendDiv.innerHTML = `
+          <strong>${post.text.substring(0, 30)}...</strong>
+          <div class="actions"><i class="fas fa-thumbs-up"></i> ${post.likes}</div>
+        `;
+        trendsFeed.appendChild(trendDiv);
+      });
+    }
+    
+    function renderTrendsFull() {
+      const trendsFull = document.getElementById('trendsFeedFull');
+      trendsFull.innerHTML = '';
+      const sorted = [...posts].sort((a, b) => b.likes - a.likes);
+      sorted.forEach(post => {
+        const trendDiv = document.createElement('div');
+        trendDiv.className = 'post';
+        trendDiv.innerHTML = `
+          <div class="post-header">
+            <img src="${post.profilePic}" alt="Avatar">
+            <div>
+              <strong>${post.username}</strong>
+              <div class="meta">${post.date}</div>
+            </div>
+          </div>
+          <p>${post.text}</p>
+          ${post.image ? `<img src="${post.image}" alt="Imagen del post">` : ''}
+          ${post.video ? `<video controls src="${post.video}"></video>` : ''}
+          <div class="actions"><i class="fas fa-thumbs-up"></i> ${post.likes}</div>
+        `;
+        trendsFull.appendChild(trendDiv);
+      });
+    }
+    
+    /* CHAT GLOBAL */
+    function sendChat() {
+      if(!currentUser) { alert('Debes iniciar sesión para chatear.'); return; }
+      const chatInput = document.getElementById('chatInput');
+      const text = chatInput.value.trim();
+      if(text) {
+        const newMsg = { username: currentUser.username, text, time: new Date().toLocaleTimeString() };
+        chatMessages.push(newMsg);
+        localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+        renderChat();
+        chatInput.value = '';
+      }
+    }
+    
+    function renderChat() {
+      const chatMessagesDiv = document.getElementById('chatMessages');
+      chatMessagesDiv.innerHTML = chatMessages.map(msg => `<p class="chat-message"><strong>${msg.username}</strong> [${msg.time}]: ${msg.text}</p>`).join('');
+      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    }
+    
+    /* GRUPOS GLOBALES */
+    function createGroup() {
+      if(!currentUser) { alert('Debes iniciar sesión para crear un grupo.'); return; }
+      const name = document.getElementById('groupName').value.trim();
+      const desc = document.getElementById('groupDesc').value.trim();
+      if(!name) { alert('Ingresa un nombre para el grupo.'); return; }
+      const newGroup = { 
+        id: Date.now(), 
+        name, 
+        description: desc, 
+        members: [currentUser.username],
+        posts: [],
+        chatMessages: []
+      };
+      groups.push(newGroup);
+      localStorage.setItem('groups', JSON.stringify(groups));
+      document.getElementById('groupName').value = '';
+      document.getElementById('groupDesc').value = '';
+      renderGroups();
+    }
+    
+    function renderGroups() {
+      const groupsList = document.getElementById('groupsList');
+      groupsList.innerHTML = '';
+      if(groups.length === 0) {
+        groupsList.innerHTML = '<li>No hay grupos disponibles. Crea uno.</li>';
+      } else {
+        groups.forEach(group => {
+          const li = document.createElement('li');
+          li.style.marginBottom = '10px';
+          li.innerHTML = `<strong>${group.name}</strong><br><small>${group.description || ''}</small>`;
+          if(!group.members.includes(currentUser.username)) {
+            const joinBtn = document.createElement('button');
+            joinBtn.style.marginTop = '5px';
+            joinBtn.style.padding = '5px 10px';
+            joinBtn.style.background = '#4267B2';
+            joinBtn.style.color = '#fff';
+            joinBtn.style.border = 'none';
+            joinBtn.style.borderRadius = '4px';
+            joinBtn.style.cursor = 'pointer';
+            joinBtn.innerText = 'Unirse';
+            joinBtn.onclick = () => joinGroup(group.id);
+            li.appendChild(document.createElement('br'));
+            li.appendChild(joinBtn);
+          } else {
+            const enterBtn = document.createElement('button');
+            enterBtn.style.marginTop = '5px';
+            enterBtn.style.padding = '5px 10px';
+            enterBtn.style.background = '#4267B2';
+            enterBtn.style.color = '#fff';
+            enterBtn.style.border = 'none';
+            enterBtn.style.borderRadius = '4px';
+            enterBtn.style.cursor = 'pointer';
+            enterBtn.innerText = 'Entrar';
+            enterBtn.onclick = () => openGroup(group.id);
+            li.appendChild(document.createElement('br'));
+            li.appendChild(enterBtn);
+          }
+          groupsList.appendChild(li);
+        });
+      }
+    }
+    
+    function joinGroup(groupId) {
+      groups = groups.map(group => {
+        if(group.id === groupId && !group.members.includes(currentUser.username)) {
+          group.members.push(currentUser.username);
+        }
+        return group;
+      });
+      localStorage.setItem('groups', JSON.stringify(groups));
+      renderGroups();
+    }
+    
+    /* VISTA DE GRUPO INDIVIDUAL */
+    let currentGroup = null;
+    function openGroup(groupId) {
+      currentGroup = groups.find(g => g.id === groupId);
+      if(!currentGroup) return;
+      document.getElementById('groupTitle').innerText = currentGroup.name;
+      document.getElementById('groupDescription').innerText = currentGroup.description;
+      renderGroupPosts();
+      renderGroupChat();
+      document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+      document.getElementById('groupView').style.display = 'block';
+    }
+    
+    function closeGroupView() {
+      currentGroup = null;
+      navigate('groupsMain');
+    }
+    
+    function createGroupPost() {
+      if(!currentUser || !currentGroup) { alert('Debes iniciar sesión y estar en un grupo para publicar.'); return; }
+      const text = document.getElementById('groupPostText').value.trim();
+      const imageFile = document.getElementById('groupPostImage').files[0];
+      const videoFile = document.getElementById('groupPostVideo').files[0];
+      if(!text && !imageFile && !videoFile) { alert('Escribe algo o adjunta un archivo.'); return; }
+      const newPost = {
+        id: Date.now(),
+        username: currentUser.username,
+        profilePic: currentUser.profilePic || 'https://via.placeholder.com/40',
+        text,
+        image: '',
+        video: '',
+        likes: 0,
+        comments: [],
+        date: new Date().toLocaleString()
+      };
+      const addPost = () => {
+        currentGroup.posts.unshift(newPost);
+        updateCurrentGroup();
+        document.getElementById('groupPostText').value = '';
+        document.getElementById('groupPostImage').value = '';
+        document.getElementById('groupPostVideo').value = '';
+        renderGroupPosts();
+      };
+      if(imageFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          newPost.image = e.target.result;
+          if(videoFile) {
+            const vReader = new FileReader();
+            vReader.onload = function(e) { newPost.video = e.target.result; addPost(); };
+            vReader.readAsDataURL(videoFile);
+          } else { addPost(); }
+        };
+        reader.readAsDataURL(imageFile);
+      } else if(videoFile) {
+        const vReader = new FileReader();
+        vReader.onload = function(e) { newPost.video = e.target.result; addPost(); };
+        vReader.readAsDataURL(videoFile);
+      } else { addPost(); }
+    }
+    
+    function renderGroupPosts() {
+      const groupPostsFeed = document.getElementById('groupPostsFeed');
+      groupPostsFeed.innerHTML = '';
+      if(currentGroup.posts.length === 0) {
+        groupPostsFeed.innerHTML = '<p>No hay publicaciones en este grupo.</p>';
+      } else {
+        currentGroup.posts.forEach(post => {
+          const postDiv = document.createElement('div');
+          postDiv.className = 'post';
+          postDiv.innerHTML = `
+            <div class="post-header">
+              <img src="${post.profilePic}" alt="Avatar">
+              <div>
+                <strong>${post.username}</strong>
+                <div class="meta">${post.date}</div>
+              </div>
+            </div>
+            <p>${post.text}</p>
+            ${post.image ? `<img src="${post.image}" alt="Imagen del post">` : ''}
+            ${post.video ? `<video controls src="${post.video}"></video>` : ''}
+            <div class="actions">
+              <button onclick="likeGroupPost(${post.id})"><i class="fas fa-thumbs-up"></i> ${post.likes}</button>
+              <button onclick="toggleGroupComments(${post.id})"><i class="fas fa-comments"></i> Comentar</button>
+            </div>
+            <div class="comments" id="groupComments-${post.id}" style="display:none;">
+              <form onsubmit="addGroupComment(event, ${post.id})">
+                <div style="display:flex; gap:5px; align-items:center;">
+                  <input type="text" placeholder="Escribe un comentario..." required style="flex:1;">
+                  <button type="button" onclick="toggleEmojiPickerGroup(${post.id})">😀</button>
+                </div>
+                <div class="emoji-picker" id="group-emoji-picker-${post.id}" style="display:none; margin:5px 0;">
+                  <span onclick="insertEmojiGroup(${post.id}, '😀')">😀</span>
+                  <span onclick="insertEmojiGroup(${post.id}, '😂')">😂</span>
+                  <span onclick="insertEmojiGroup(${post.id}, '😍')">😍</span>
+                  <span onclick="insertEmojiGroup(${post.id}, '😢')">😢</span>
+                  <span onclick="insertEmojiGroup(${post.id}, '👍')">👍</span>
+                  <span onclick="insertEmojiGroup(${post.id}, '👎')">👎</span>
+                </div>
+                <button type="submit">Enviar</button>
+              </form>
+              ${post.comments.map(comment => `
+                <div class="comment">
+                  <img src="${comment.profilePic}" alt="Avatar">
+                  <span><strong>${comment.username}:</strong> ${comment.text}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          groupPostsFeed.appendChild(postDiv);
+        });
+      }
+    }
+    
+    function likeGroupPost(postId) {
+      currentGroup.posts = currentGroup.posts.map(post => { if(post.id === postId) post.likes++; return post; });
+      updateCurrentGroup();
+      renderGroupPosts();
+    }
+    
+    function toggleGroupComments(postId) {
+      const commentDiv = document.getElementById('groupComments-' + postId);
+      commentDiv.style.display = commentDiv.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function addGroupComment(event, postId) {
+      event.preventDefault();
+      const commentInput = event.target.querySelector('input');
+      const text = commentInput.value.trim();
+      if(text) {
+        currentGroup.posts = currentGroup.posts.map(post => {
+          if(post.id === postId) {
+            post.comments.push({ 
+              username: currentUser.username, 
+              text, 
+              profilePic: currentUser.profilePic || 'https://via.placeholder.com/40'
+            });
+          }
+          return post;
+        });
+        updateCurrentGroup();
+        renderGroupPosts();
+      }
+    }
+    
+    function toggleEmojiPickerGroup(postId) {
+      const picker = document.getElementById('group-emoji-picker-' + postId);
+      picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function insertEmojiGroup(postId, emoji) {
+      const form = document.querySelector(`#groupComments-${postId} form`);
+      if(form) { const input = form.querySelector('input'); input.value += emoji; }
+    }
+    
+    function sendGroupChat() {
+      if(!currentUser || !currentGroup) { alert('Debes iniciar sesión y estar en un grupo para chatear.'); return; }
+      const groupChatInput = document.getElementById('groupChatInput');
+      const text = groupChatInput.value.trim();
+      if(text) {
+        const newMsg = { username: currentUser.username, text, time: new Date().toLocaleTimeString() };
+        currentGroup.chatMessages.push(newMsg);
+        updateCurrentGroup();
+        renderGroupChat();
+        groupChatInput.value = '';
+      }
+    }
+    
+    function renderGroupChat() {
+      const groupChatMessagesDiv = document.getElementById('groupChatMessages');
+      groupChatMessagesDiv.innerHTML = currentGroup.chatMessages.map(msg => `<p class="chat-message"><strong>${msg.username}</strong> [${msg.time}]: ${msg.text}</p>`).join('');
+      groupChatMessagesDiv.scrollTop = groupChatMessagesDiv.scrollHeight;
+    }
+    
+    function updateCurrentGroup() {
+      groups = groups.map(group => group.id === currentGroup.id ? currentGroup : group);
+      localStorage.setItem('groups', JSON.stringify(groups));
+    }
+    
+    /* PERFIL DE USUARIO */
+    function renderProfile() {
+      if(currentUser) {
+        document.getElementById('profilePic').src = currentUser.profilePic || 'https://via.placeholder.com/100';
+        document.getElementById('profileDescription').value = currentUser.description || '';
+        document.getElementById('profileInterests').value = currentUser.interests || '';
+      }
+    }
+    
+    function updateProfile() {
+      const picInput = document.getElementById('profilePicInput').files[0];
+      const description = document.getElementById('profileDescription').value.trim();
+      const interests = document.getElementById('profileInterests').value.trim();
+      if(picInput) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentUser.profilePic = e.target.result;
+          finishProfileUpdate(description, interests);
+        };
+        reader.readAsDataURL(picInput);
+      } else { finishProfileUpdate(description, interests); }
+    }
+    
+    function finishProfileUpdate(description, interests) {
+      currentUser.description = description;
+      currentUser.interests = interests;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      alert('Perfil actualizado.');
+      document.getElementById('profileUsername').innerText = currentUser.username;
+      if(currentUser.profilePic) document.getElementById('sidebarAvatar').src = currentUser.profilePic;
+    }
+    
+    /* AL CARGAR LA PÁGINA */
+    window.onload = function() {
+      const storedUser = localStorage.getItem('currentUser');
+      if(storedUser) {
+        currentUser = JSON.parse(storedUser);
+        document.getElementById('profileUsername').innerText = currentUser.username;
+        document.getElementById('authModal').style.display = 'none';
+        navigate('home');
+        renderPosts();
+        renderTrends();
+        renderGroups();
+      }
+    };
+  </script>
+</body>
+</html>
